@@ -1825,6 +1825,10 @@ function renderChildCard(child){
           <button class="reward-btn" onclick="claimReward('${child.id}')" ${child.totalPoints < 50 ? 'disabled' : ''}>
             🎁 兑换奖励（需50积分）
           </button>
+          <button class="reward-btn" onclick="addSportScore('${child.id}')" style="background:linear-gradient(135deg,#0ea5e9,#10b981);margin-top:8px;">
+            🏃 运动加分（+10分）
+          </button>
+          <p style="font-size:10px;color:#9ca3af;margin-top:4px;text-align:center;">完成运动后由妈妈输入密码审核加分</p>
         </div>
       </div>
     </div>
@@ -1960,6 +1964,46 @@ function claimReward(childId){
   const color = colors[childId];
   showModal('🎁 奖励兑换', `<p>恭喜 <strong style="color:${color}">${child.nick}</strong>！</p><p>你用 50 积分兑换了：</p><p style="font-size:20px;font-weight:800;color:${color};text-align:center;padding:20px;background:${color}15;border-radius:14px;">${reward}</p><p style="text-align:center;color:#9ca3af;font-size:12px;">请找爸爸妈妈兑现哦～</p>`);
   saveData();
+  render();
+}
+
+function addSportScore(childId){
+  const child = appData.children.find(c => c.id === childId);
+  if(!child) return;
+  const html = `
+    <div style="text-align:center;margin:10px 0;">
+      <div style="font-size:48px;">🏃</div>
+      <p style="font-size:14px;color:#4b5563;margin:10px 0;">为 <strong>${child.nick}</strong> 添加运动积分</p>
+      <p style="font-size:12px;color:#9ca3af;margin-bottom:14px;">请妈妈输入审核密码</p>
+      <input type="password" id="sportPwdInput" placeholder="请输入密码" maxlength="10"
+        style="width:60%;padding:12px 16px;border-radius:12px;border:2px solid #e5e7eb;font-size:16px;text-align:center;margin-bottom:10px;"
+        onkeydown="if(event.key==='Enter')confirmSportScore('${childId}')">
+      <div id="sportPwdError" style="font-size:12px;color:#ef4444;height:16px;"></div>
+    </div>`;
+  const actions = `<div class="modal-actions">
+    <button class="btn-primary" onclick="confirmSportScore('${childId}')">确认加分 +10</button>
+    <button class="btn-secondary" onclick="closeModal()">取消</button>
+  </div>`;
+  showModal('🏃 运动加分', html, actions);
+  setTimeout(() => { const inp = document.getElementById('sportPwdInput'); if(inp) inp.focus(); }, 100);
+}
+
+function confirmSportScore(childId){
+  const inp = document.getElementById('sportPwdInput');
+  const pwd = inp ? inp.value.trim() : '';
+  if(pwd !== 'H890726'){
+    const errEl = document.getElementById('sportPwdError');
+    if(errEl) errEl.textContent = '密码错误，请妈妈输入正确密码';
+    if(inp) { inp.value = ''; inp.focus(); }
+    return;
+  }
+  const child = appData.children.find(c => c.id === childId);
+  child.totalPoints += 10;
+  child.weekPoints += 10;
+  saveData();
+  closeModal();
+  showCelebration('🏃', `${child.nick}运动加分！+10分`);
+  spawnFireworks();
   render();
 }
 
@@ -2443,7 +2487,7 @@ function decaySatiety(pet){
   if(!pet.lastFedTime) return;
   const hours = (Date.now() - new Date(pet.lastFedTime).getTime()) / 3600000;
   if(hours > 0){
-    pet.satiety = Math.max(0, pet.satiety - Math.floor(hours * 2));
+    pet.satiety = Math.max(0, pet.satiety - Math.floor(hours * 1));
     pet.mood = getPetMood(pet);
   }
 }
@@ -2840,6 +2884,51 @@ function switchPetChild(currentId){
 }
 
 // === 喂养 ===
+// 每个孩子的每日喂养台词
+const PET_GREETINGS = {
+  c1: { text: '最美的淳，终于又见到你，跟我一起开启新的一天吧。', voice: { rate: 0.9, pitch: 1.1 } },
+  c2: { text: '亲爱的悦宝，一日不见如隔三秋，让我们今天再进一步，加油！', voice: { rate: 1.0, pitch: 1.3 } },
+  c3: { text: '宇宙无敌帅气的东哥，你负责武装大脑，我负责强壮身体，让我们勇往直前吧！', voice: { rate: 1.0, pitch: 0.8 } },
+};
+
+function speakText(text, voiceOpts){
+  try {
+    if(!('speechSynthesis' in window)) return;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'zh-CN';
+    if(voiceOpts){
+      utter.rate = voiceOpts.rate || 1.0;
+      utter.pitch = voiceOpts.pitch || 1.0;
+    }
+    // 尝试选中文语音
+    const voices = window.speechSynthesis.getVoices();
+    const zhVoice = voices.find(v => v.lang.startsWith('zh'));
+    if(zhVoice) utter.voice = zhVoice;
+    window.speechSynthesis.speak(utter);
+  } catch(e) { /* 语音不可用就静默 */ }
+}
+
+function showFeedAnimation(childId){
+  const child = appData.children.find(c => c.id === childId);
+  if(!child || !child.pet) return;
+  const pt = PET_TYPES[child.pet.type];
+  const greeting = PET_GREETINGS[childId];
+  // 创建全屏动画
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);animation:fadeIn .3s;';
+  overlay.id = 'feedAnimOverlay';
+  overlay.innerHTML = `
+    <div style="font-size:80px;animation:petBob 1s ease-in-out infinite;">${pt.face}</div>
+    <div style="color:#fff;font-size:18px;font-weight:700;margin-top:16px;text-align:center;max-width:80%;line-height:1.6;">${greeting ? greeting.text : ''}</div>
+    <div style="margin-top:20px;font-size:13px;color:rgba(255,255,255,.5);">💡 点击关闭</div>`;
+  overlay.onclick = () => { overlay.remove(); };
+  document.body.appendChild(overlay);
+  // 语音播报
+  if(greeting) speakText(greeting.text, greeting.voice);
+  // 8秒后自动关闭
+  setTimeout(() => { if(document.getElementById('feedAnimOverlay')) overlay.remove(); }, 8000);
+}
+
 function feedPet(childId, foodId){
   const child = appData.children.find(c => c.id === childId);
   if(!child || !child.pet) return;
@@ -2854,6 +2943,13 @@ function feedPet(childId, foodId){
   const satietyGain = Math.floor(food.satiety * (isPrefer ? 1.5 : 1));
   const expGain = Math.floor(food.exp * (isPrefer ? 1.5 : 1));
 
+  // 检查是否今天首次喂养
+  const today = getToday();
+  const isFirstFeedToday = !child.lastFeedDate || child.lastFeedDate !== today;
+  if(isFirstFeedToday){
+    child.lastFeedDate = today;
+  }
+
   pet.satiety = Math.min(100, pet.satiety + satietyGain);
   pet.exp += expGain;
   pet.feedCount++;
@@ -2867,6 +2963,12 @@ function feedPet(childId, foodId){
 
   const preferText = isPrefer ? ' 偏好食物加成×1.5！' : '';
   showCelebration(food.emoji, `${pet.name}吃得好开心！+${satietyGain}饱食 +${expGain}经验${preferText}`);
+
+  // 每日首次喂养触发动画+语音
+  if(isFirstFeedToday){
+    setTimeout(() => showFeedAnimation(childId), 500);
+  }
+
   renderPetPanel(childId);
   render();
 }
@@ -3550,7 +3652,24 @@ async function startPK(participantIds, mode){
 
   // 渲染PK战场
   renderPKArena(fighters, mode);
-  await sleep(1000);
+  await sleep(800);
+
+  // 宠物互动彩蛋
+  const interactionEggs = [
+    { msg: '🐾 小猫追着小鸡跑了一圈！小鸡生气地竖起了羽毛！', cond: (fs) => fs.some(f=>f.petType==='cat') && fs.some(f=>f.petType==='chick') },
+    { msg: '🦴 小狗摇着尾巴想和小乌龟玩，小乌龟缩进了壳里...', cond: (fs) => fs.some(f=>f.petType==='puppy') && fs.some(f=>f.petType==='turtle') },
+    { msg: '🐱 小猫舔了舔爪子，不屑地看了小狗一眼。小狗委屈地汪了一声。', cond: (fs) => fs.some(f=>f.petType==='cat') && fs.some(f=>f.petType==='puppy') },
+    { msg: '🐢 小乌龟慢悠悠地走着，小鸡在旁边急得跳脚：快点呀！', cond: (fs) => fs.some(f=>f.petType==='turtle') && fs.some(f=>f.petType==='chick') },
+    { msg: '🐾 大家互相看了一眼，气氛有点紧张...战斗一触即发！', cond: () => true },
+  ];
+  const validEggs = interactionEggs.filter(e => e.cond(fighters));
+  if(validEggs.length > 0){
+    const egg = validEggs[Math.floor(Math.random() * validEggs.length)];
+    await pkLog(`<div style="color:#fbbf24;font-size:13px;font-style:italic;">${egg.msg}</div>`);
+    await sleep(1500);
+  }
+
+  await sleep(500);
 
   // 回合制战斗
   let round = 1;
@@ -3561,12 +3680,36 @@ async function startPK(participantIds, mode){
       if(fighter.hp <= 0) continue;
       const enemies = fighters.filter(f => f.side !== fighter.side && f.hp > 0);
       if(enemies.length === 0) break;
-      // 选HP最低的敌人
-      const target = enemies.sort((a,b) => a.hp - b.hp)[0];
+      // 宠物AI策略：不同宠物有不同性格
+      let target;
+      const pt = PET_TYPES[fighter.petType];
+      if(fighter.petType === 'turtle'){
+        // 乌龟：血少时50%概率防御，否则攻击最弱的
+        if(fighter.hp < fighter.maxHp * 0.4 && Math.random() < 0.5){
+          const defendSkill = SKILLS['shellDefend'];
+          await pkLog(`<div class="pk-round-info">第${round}回合 · ${fighter.petName}出手！</div>`);
+          await sleep(600);
+          await pkUseSkill(fighter, fighter, defendSkill);
+          await sleep(900);
+          updatePKArena(fighters);
+          continue;
+        }
+        target = enemies.sort((a,b) => a.hp - b.hp)[0];
+      } else if(fighter.petType === 'cat'){
+        // 小猫：优先攻击防御最低的（脆皮杀手）
+        target = enemies.sort((a,b) => a.defense - b.defense)[0];
+      } else if(fighter.petType === 'chick'){
+        // 小鸡：速度型，随机选目标（快但莽撞）
+        target = enemies[Math.floor(Math.random() * enemies.length)];
+      } else {
+        // 小狗：均衡型，选HP最低的
+        target = enemies.sort((a,b) => a.hp - b.hp)[0];
+      }
 
       await pkLog(`<div class="pk-round-info">第${round}回合 · ${fighter.petName}出手！</div>`);
       await sleep(600);
 
+      // 技能选择：已装备的技能
       const skill = SKILLS[fighter.skill];
       await pkUseSkill(fighter, target, skill);
       await sleep(900);
