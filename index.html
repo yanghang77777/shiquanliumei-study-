@@ -1888,12 +1888,17 @@ function addReading(childId){
   const today = getToday();
   child.readingLog[today] = (child.readingLog[today] || 0) + mins;
   child.readingMinutes += mins;
-  const points = Math.floor(mins / 10) * 5;
+  // 基础分：每10分钟5分
+  const timePoints = Math.floor(mins / 10) * 5;
+  // 章节奖励：每20分钟算1个章节，每章+5分
+  const chapters = Math.floor(mins / 20);
+  const chapterPoints = chapters * 5;
+  const points = timePoints + chapterPoints;
   child.totalPoints += points;
   child.weekPoints += points;
   input.value = '';
   saveData();
-  showCelebration('📚', `阅读${mins}分钟 +${points}分`);
+  showCelebration('📚', `阅读${mins}分钟 +${points}分（含${chapters}章奖励）`);
   render();
 }
 
@@ -2599,8 +2604,8 @@ function renderPetPanel(childId){
   html += `<div class="pet-display-name">${pet.name} ${pet.armor ? ARMORS[pet.armor].emoji : ''}</div>`;
   html += `<div class="pet-display-sub">${pt.name} · Lv.${pet.level} · ${MOOD_TEXT[mood]}</div>`;
 
-  // 等级和经验
-  const expNeeded = pet.level * 50;
+  // 等级和经验：Lv(n)→(n+1)需 10+(n-1)*5
+  const expNeeded = 10 + (pet.level - 1) * 5;
   const expPct = Math.min(100, (pet.exp / expNeeded) * 100);
   html += `<div class="pet-bar-wrap">
     <div class="pet-bar-label"><span>⭐ 经验</span><span>${pet.exp}/${expNeeded}</span></div>
@@ -2667,7 +2672,8 @@ function renderPetPanel(childId){
       const count = child.foodBag[fid] || 0;
       const isPrefer = pt.preferFood === fid;
       const disabled = count <= 0;
-      html += `<div class="pet-food-card ${disabled?'disabled':''}" ${disabled?'':'onclick="feedPet(\\''+childId+'\\',\\''+fid+'\\')"'}">
+      const clickAttr = disabled ? '' : 'onclick="feedPet(\'' + childId + '\',\'' + fid + '\')"';
+      html += `<div class="pet-food-card ${disabled?'disabled':''}" ${clickAttr}>
         <div class="pet-food-emoji">${food.emoji}${isPrefer?'⭐':''}</div>
         <div class="pet-food-name">${food.name}</div>
         <div class="pet-food-count">x${count}</div>
@@ -2763,9 +2769,12 @@ function feedPet(childId, foodId){
 function checkPetLevelUp(childId){
   const child = appData.children.find(c => c.id === childId);
   const pet = child.pet;
+  // 升级所需：Lv1→2需10, Lv2→3需15, Lv3→4需20, Lv(n)→(n+1)需 10+(n-1)*5
+  // 即每级递增5，起步10
+  function expNeeded(level){ return 10 + (level - 1) * 5; }
   let leveledUp = false;
-  while(pet.exp >= pet.level * 50){
-    pet.exp -= pet.level * 50;
+  while(pet.exp >= expNeeded(pet.level)){
+    pet.exp -= expNeeded(pet.level);
     pet.level++;
     leveledUp = true;
   }
@@ -3159,9 +3168,25 @@ function submitBookNoteForScoring(childId, bookIndex, bookTitle){
     return;
   }
 
+  // 防止重复评分加分（同一本书只能评分一次）
+  const scoreKey = '__aiScore_' + bookTitle;
+  if(child.bookNotes[scoreKey]){
+    showToast('这本书已经评过分了，去看之前的评分吧！');
+    showScoreResultModal(child.bookNotes[scoreKey]);
+    return;
+  }
+
   // 存储评分
   if(!child.bookNotes) child.bookNotes = {};
-  child.bookNotes['__aiScore_' + bookTitle] = { ...result, scoredAt: getToday() };
+  child.bookNotes[scoreKey] = { ...result, scoredAt: getToday() };
+
+  // 阅读理解积分：根据评分等级给1-5分
+  const readingPoints = result.level === 'excellent' ? 5 :
+                         result.level === 'good' ? 4 :
+                         result.level === 'fair' ? 3 : 1;
+  child.totalPoints += readingPoints;
+  child.weekPoints += readingPoints;
+  result.readingPoints = readingPoints;
 
   // 发放食物奖励
   child.foodBag[result.foodReward] = (child.foodBag[result.foodReward] || 0) + result.foodAmount;
@@ -3206,9 +3231,9 @@ function showScoreResultModal(result){
   }
 
   html += `<div class="score-reward">
-    <div style="font-size:14px;font-weight:700;color:#92400e;">🍖 奖励食物</div>
-    <div style="font-size:32px;">${food.emoji} x${result.foodAmount}</div>
-    <div style="font-size:12px;color:#92400e;">${food.name} 已放入背包</div>
+    <div style="font-size:14px;font-weight:700;color:#92400e;">🎁 阅读理解奖励</div>
+    <div style="font-size:28px;margin:4px 0;">⭐ +${result.readingPoints || 0}积分 · ${food.emoji} x${result.foodAmount}</div>
+    <div style="font-size:12px;color:#92400e;">积分已加入总分 · ${food.name} 已放入背包</div>
   </div>`;
 
   html += '</div>';
