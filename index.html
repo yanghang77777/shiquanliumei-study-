@@ -708,6 +708,7 @@ body::after{
   <button onclick="resetToday()">🔄 重置今日</button>
   <button onclick="openPetWorld()" style="background:linear-gradient(135deg,#a855f7,#ec4899);color:#fff;">🐾 宠物乐园</button>
   <button onclick="openPKArena()" style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;">⚔️ 宠物PK</button>
+  <button onclick="showPetGuide()" style="background:linear-gradient(135deg,#0ea5e9,#10b981);color:#fff;">📖 使用指南</button>
 </div>
 
 <!-- 时段进度 -->
@@ -2456,6 +2457,110 @@ function initPetSystem(){
   saveData();
 }
 
+// === 使用指南 ===
+function showPetGuide(){
+  let html = `
+  <style>
+    .guide-section{margin:14px 0;padding:14px;border-radius:14px;}
+    .guide-section h3{font-size:15px;font-weight:700;margin-bottom:8px;}
+    .guide-section p{font-size:13px;color:#4b5563;line-height:1.7;margin:4px 0;}
+    .guide-step{display:flex;gap:10px;align-items:flex-start;margin:8px 0;}
+    .guide-step-num{flex-shrink:0;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;}
+    .guide-demo{background:#f3f4f6;border-radius:10px;padding:10px;margin:8px 0;font-size:12px;color:#6b7280;text-align:center;position:relative;overflow:hidden;min-height:40px;}
+    .guide-demo-emoji{font-size:28px;display:inline-block;animation:guideDemoBounce 1.5s ease-in-out infinite;}
+    @keyframes guideDemoBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    .guide-flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;margin:10px 0;}
+    .guide-flow-step{background:#e0e7ff;border-radius:10px;padding:6px 12px;font-size:12px;font-weight:600;color:#4338ca;}
+    .guide-flow-arrow{font-size:16px;color:#9ca3af;}
+  </style>
+
+  <div class="guide-section" style="background:linear-gradient(135deg,#faf5ff,#fce7f3);">
+    <h3>🐾 第一步：领养宠物</h3>
+    <div class="guide-step"><div class="guide-step-num" style="background:#a855f7;">1</div><p>在你的卡片里找到<b>宠物区域</b>（推荐书单上方），点击「❓ 还没有宠物」</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#a855f7;">2</div><p>选择你喜欢的宠物：<b>🐣小鸡</b>（速度快）/ <b>🐶小狗</b>（攻防均衡）/ <b>🐢小乌龟</b>（防御高）/ <b>🐱小猫</b>（暴击高）</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#a855f7;">3</div><p>给它起个名字，确认领养！</p></div>
+    <div class="guide-demo"><span class="guide-demo-emoji">🐣</span> → <span class="guide-demo-emoji">🐶</span> → <span class="guide-demo-emoji">🐢</span> → <span class="guide-demo-emoji">🐱</span><br>四选一，每只都有不同特点！</div>
+  </div>
+
+  <div class="guide-section" style="background:linear-gradient(135deg,#fff7ed,#fef3c7);">
+    <h3>🍖 第二步：喂养宠物</h3>
+    <div class="guide-step"><div class="guide-step-num" style="background:#f97316;">1</div><p>点击宠物卡片上的「🍖」按钮，快速喂食偏好食物</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#f97316;">2</div><p>或点击「🐾」打开宠物面板，切换到「🍖 喂食」标签</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#f97316;">3</div><p>食物从哪来？<b>闯关</b>通关给食物 · <b>读后感评分</b>奖励食物 · <b>商店</b>用积分买食物</p></div>
+    <div class="guide-demo">
+      <span class="guide-demo-emoji">🌾</span><span class="guide-demo-emoji">🦴</span><span class="guide-demo-emoji">🥗</span><span class="guide-demo-emoji">🐟</span><span class="guide-demo-emoji">🍰</span><br>
+      谷物 / 骨头 / 蔬菜 / 小鱼 / 蛋糕（高级）<br>
+      <span style="font-size:11px;color:#f97316;">⭐ 偏好食物喂养效果×1.5！</span>
+    </div>
+    <p style="font-size:12px;color:#9ca3af;margin-top:6px;">💡 宠物饱食度每小时-2，记得常来喂养哦！喂养越多，宠物战斗力越强！</p>
+  </div>
+
+  <div class="guide-section" style="background:linear-gradient(135deg,#ecfdf5,#d1fae5);">
+    <h3>🎮 第三步：闯关赚积分</h3>
+    <div class="guide-step"><div class="guide-step-num" style="background:#10b981;">1</div><p>打开宠物面板，切换到「🎮 闯关」标签</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#10b981;">2</div><p>每天可以闯3关，每5关一个<b>👑BOSS关</b>（需连答2题）</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#10b981;">3</div><p>通关奖励：<b>+10积分 +1食物</b>；BOSS关：<b>+30积分 +1蛋糕</b></p></div>
+    <div class="guide-demo">📍 勇者出发 → 智慧小径 → 谜语桥 → ... → 圆满归途<br><span style="font-size:11px;">共30关，每关对应一个知识点，闯关=学习！</span></div>
+  </div>
+
+  <div class="guide-section" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);">
+    <h3>📝 第四步：读后感AI评分</h3>
+    <div class="guide-step"><div class="guide-step-num" style="background:#0ea5e9;">1</div><p>打开一本书的详情，在读书笔记区写读后感</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#0ea5e9;">2</div><p>点击「📝 AI评分」按钮，系统从4个维度打分</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#0ea5e9;">3</div><p>评分越高，奖励越多：<b>1-5积分</b> + 食物奖励！</p></div>
+    <div class="guide-demo">
+      📏 篇幅 + 📖 关键内容 + 😊 情感表达 + 🧠 理解深度<br>
+      <span style="font-size:11px;color:#0ea5e9;">80分以上=3蛋糕 | 60分=1蛋糕 | 40分=2偏好食物</span>
+    </div>
+  </div>
+
+  <div class="guide-section" style="background:linear-gradient(135deg,#fef2f2,#fee2e2);">
+    <h3>⚔️ 第五步：宠物PK</h3>
+    <div class="guide-step"><div class="guide-step-num" style="background:#ef4444;">1</div><p>点击工具栏「⚔️ 宠物PK」进入竞技场</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#ef4444;">2</div><p>选择模式：<b>1v1单挑</b> 或 <b>1v2以一敌二</b>（奖励翻倍！）</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#ef4444;">3</div><p>宠物自动战斗，孩子观看过程！喂得越多越厉害！</p></div>
+    <div class="guide-demo">
+      <span class="guide-demo-emoji">🐱</span> ⚔️ <span class="guide-demo-emoji">🐶</span><br>
+      <span style="font-size:11px;">技能特效：⚡啄啄攻击 · 🐾猫爪连击 · 🥚彩蛋炸弹 · 💦水花喷射</span>
+    </div>
+    <p style="font-size:12px;color:#9ca3af;margin-top:6px;">💡 胜者+10积分+1蛋糕+20经验；败者+5经验参与奖。1v2单挑方胜利奖励翻倍！</p>
+  </div>
+
+  <div class="guide-section" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);text-align:center;">
+    <h3>🔄 完整循环</h3>
+    <div class="guide-flow">
+      <span class="guide-flow-step">📚学习</span>
+      <span class="guide-flow-arrow">→</span>
+      <span class="guide-flow-step">⭐积分</span>
+      <span class="guide-flow-arrow">→</span>
+      <span class="guide-flow-step">🍖食物</span>
+      <span class="guide-flow-arrow">→</span>
+      <span class="guide-flow-step">🐾喂养</span>
+      <span class="guide-flow-arrow">→</span>
+      <span class="guide-flow-step">💪变强</span>
+      <span class="guide-flow-arrow">→</span>
+      <span class="guide-flow-step">⚔️PK赢</span>
+      <span class="guide-flow-arrow">→</span>
+      <span class="guide-flow-step">🎁更多奖励</span>
+      <span class="guide-flow-arrow">↻</span>
+    </div>
+  </div>
+
+  <div class="guide-section" style="background:#fffbeb;text-align:center;">
+    <p style="font-size:13px;color:#92400e;font-weight:600;">📊 宠物升级规则</p>
+    <p style="font-size:12px;color:#9ca3af;">Lv1→2需10经验 · Lv2→3需15 · Lv3→4需20 · 每级递增5<br>每5级解锁新技能！Lv5解锁第2技能，Lv10解锁第3技能</p>
+  </div>
+  `;
+  showModal('📖 宠物系统使用指南', html);
+}
+
+// 首次访问自动弹出指南
+function checkFirstTimeGuide(){
+  if(!localStorage.getItem('petGuideShown')){
+    setTimeout(() => { showPetGuide(); localStorage.setItem('petGuideShown','1'); }, 800);
+  }
+}
+
 // === 宠物选择 ===
 function choosePet(childId){
   const child = appData.children.find(c => c.id === childId);
@@ -3500,8 +3605,7 @@ async function startPK(participantIds, mode){
 }
 
 function renderPKArena(fighters, mode){
-  let html = '<div class="pk-container" style="background:linear-gradient(160deg,#1e1b4b,#312e81,#4c1d95);">';
-  html += `<div class="pk-title">⚔️ ${mode==='1v2'?'以一敌二':'宠物对战'}</div>`;
+  let html = `<div class="pk-title">⚔️ ${mode==='1v2'?'以一敌二':'宠物对战'}</div>`;
   html += '<div class="pk-arena" id="pkArena">';
 
   // A方
@@ -3516,9 +3620,8 @@ function renderPKArena(fighters, mode){
 
   // 战斗日志
   html += '<div class="pk-log" id="pkLog"></div>';
-  html += '</div>';
 
-  document.getElementById('pkOverlay').innerHTML = html;
+  document.getElementById('pkContainer').innerHTML = html;
   document.getElementById('pkOverlay').classList.add('show');
 }
 
@@ -3622,8 +3725,7 @@ async function pkLog(msg){
 
 function pkEnd(winners, losers, mode, allFighters){
   const is1v2 = mode === '1v2';
-  let html = '<div class="pk-container" style="background:linear-gradient(160deg,#1e1b4b,#312e81,#4c1d95);">';
-  html += '<div class="pk-result">';
+  let html = '<div class="pk-result">';
 
   const winnerNames = winners.map(w => w.petName).join(' & ');
   html += '<div class="pk-result-trophy">🏆</div>';
@@ -3658,10 +3760,10 @@ function pkEnd(winners, losers, mode, allFighters){
   html += '<button class="pk-mode-btn" onclick="closePKArena();showPKSetup()">⚔️ 再来一局</button>';
   html += '<button class="pk-mode-btn" onclick="closePKArena()">返回</button>';
   html += '</div>';
-  html += '</div></div>';
+  html += '</div>';
 
   saveData();
-  document.getElementById('pkOverlay').innerHTML = html;
+  document.getElementById('pkContainer').innerHTML = html;
 }
 
 // ============================================================
@@ -3670,6 +3772,7 @@ function pkEnd(winners, losers, mode, allFighters){
 loadData();
 initPetSystem();
 render();
+checkFirstTimeGuide();
 
 setInterval(() => {
   if(appData.lastResetDate !== getToday()){
