@@ -1914,7 +1914,7 @@ function renderChildCard(child){
             🎁 兑换奖励（需50积分）
           </button>
           <button class="reward-btn" onclick="addSportScore('${child.id}')" style="background:linear-gradient(135deg,#0ea5e9,#10b981);margin-top:8px;">
-            🏃 运动加分（+10分）
+            🏃 运动加分（+30分）
           </button>
           <p style="font-size:10px;color:#9ca3af;margin-top:4px;text-align:center;">完成运动后由妈妈输入密码审核加分</p>
         </div>
@@ -2069,7 +2069,7 @@ function addSportScore(childId){
       <div id="sportPwdError" style="font-size:12px;color:#ef4444;height:16px;"></div>
     </div>`;
   const actions = `<div class="modal-actions">
-    <button class="btn-primary" onclick="confirmSportScore('${childId}')">确认加分 +10</button>
+    <button class="btn-primary" onclick="confirmSportScore('${childId}')">确认加分 +30</button>
     <button class="btn-secondary" onclick="closeModal()">取消</button>
   </div>`;
   showModal('🏃 运动加分', html, actions);
@@ -2086,11 +2086,11 @@ function confirmSportScore(childId){
     return;
   }
   const child = appData.children.find(c => c.id === childId);
-  child.totalPoints += 10;
-  child.weekPoints += 10;
+  child.totalPoints += 30;
+  child.weekPoints += 30;
   saveData();
   closeModal();
-  showCelebration('🏃', `${child.nick}运动加分！+10分`);
+  showCelebration('🏃', `${child.nick}运动加分！+30分`);
   spawnFireworks();
   render();
 }
