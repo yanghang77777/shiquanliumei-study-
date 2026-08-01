@@ -1497,12 +1497,12 @@ const DEFAULT_DATA = {
       foodBag: { seed:0, bone:0, veggie:0, fish:0, cake:0 },
       questState: { currentStage:1, todayCleared:[], lastClearDate:'', totalCleared:0 },
       tasks: [
-        { id:'c1am1', text:'数学预习（八年级上册）', points:15, done:false, session:'am' },
-        { id:'c1am2', text:'英语阅读理解 2篇', points:15, done:false, session:'am' },
-        { id:'c1am3', text:'语文古诗文背诵', points:10, done:false, session:'am' },
-        { id:'c1am4', text:'物理预习（八年级上册）', points:15, done:false, session:'am' },
-        { id:'c1pm1', text:'课外阅读 30分钟', points:10, done:false, session:'pm' },
-        { id:'c1pm2', text:'历史故事/科普阅读', points:10, done:false, session:'pm' },
+        { id:'c1am1', text:'数学预习（八年级上册）', points:5, done:false, session:'am' },
+        { id:'c1am2', text:'英语阅读理解 2篇', points:5, done:false, session:'am' },
+        { id:'c1am3', text:'语文古诗文背诵', points:3, done:false, session:'am' },
+        { id:'c1am4', text:'物理预习（八年级上册）', points:5, done:false, session:'am' },
+        { id:'c1pm1', text:'课外阅读 30分钟', points:3, done:false, session:'pm' },
+        { id:'c1pm2', text:'历史故事/科普阅读', points:3, done:false, session:'pm' },
       ],
       books: [
         { title:'《明朝那些事儿》', emoji:'🏯', desc:'当年明月·通俗易懂的明史', status:'unread', tag:'history' },
@@ -1533,11 +1533,11 @@ const DEFAULT_DATA = {
       foodBag: { seed:0, bone:0, veggie:0, fish:0, cake:0 },
       questState: { currentStage:1, todayCleared:[], lastClearDate:'', totalCleared:0 },
       tasks: [
-        { id:'c2am1', text:'数学口算练习 1页', points:10, done:false, session:'am' },
-        { id:'c2am2', text:'语文生字书写', points:10, done:false, session:'am' },
-        { id:'c2am3', text:'英语单词背诵 10个', points:10, done:false, session:'am' },
-        { id:'c2pm1', text:'课外阅读 20分钟', points:10, done:false, session:'pm' },
-        { id:'c2pm2', text:'日记/小练笔 1篇', points:15, done:false, session:'pm' },
+        { id:'c2am1', text:'数学口算练习 1页', points:3, done:false, session:'am' },
+        { id:'c2am2', text:'语文生字书写', points:3, done:false, session:'am' },
+        { id:'c2am3', text:'英语单词背诵 10个', points:3, done:false, session:'am' },
+        { id:'c2pm1', text:'课外阅读 20分钟', points:3, done:false, session:'pm' },
+        { id:'c2pm2', text:'日记/小练笔 1篇', points:5, done:false, session:'pm' },
       ],
       books: [
         { title:'《写给儿童的中国历史》', emoji:'📖', desc:'陈卫平·历史故事入门', status:'unread', tag:'history' },
@@ -1568,11 +1568,11 @@ const DEFAULT_DATA = {
       foodBag: { seed:0, bone:0, veggie:0, fish:0, cake:0 },
       questState: { currentStage:1, todayCleared:[], lastClearDate:'', totalCleared:0 },
       tasks: [
-        { id:'c3am1', text:'拼音朗读练习', points:10, done:false, session:'am' },
-        { id:'c3am2', text:'数学口算 20道', points:10, done:false, session:'am' },
-        { id:'c3am3', text:'汉字书写 5个', points:10, done:false, session:'am' },
-        { id:'c3pm1', text:'绘本阅读 15分钟', points:15, done:false, session:'pm' },
-        { id:'c3pm2', text:'背诵古诗 1首', points:10, done:false, session:'pm' },
+        { id:'c3am1', text:'拼音朗读练习', points:3, done:false, session:'am' },
+        { id:'c3am2', text:'数学口算 20道', points:3, done:false, session:'am' },
+        { id:'c3am3', text:'汉字书写 5个', points:3, done:false, session:'am' },
+        { id:'c3pm1', text:'绘本阅读 15分钟', points:5, done:false, session:'pm' },
+        { id:'c3pm2', text:'背诵古诗 1首', points:3, done:false, session:'pm' },
       ],
       books: [
         { title:'《中国神话故事》注音版', emoji:'🐉', desc:'注音版·盘古开天女娲补天', status:'unread', tag:'history' },
@@ -1600,8 +1600,8 @@ const TIPS = [
   '💡 上午精力好，适合攻克数学等学科任务',
   '💡 下午时光适合安静阅读，沉浸在书本世界里',
   '💡 连续打卡可以获得额外积分奖励哦！',
-  '💡 读完一本书可以获得30积分大奖！',
-  '💡 全部完成任务当天额外奖励20积分！',
+  '💡 读完一本书可以获得20积分大奖！',
+  '💡 全部完成任务当天额外奖励5积分！',
   '💡 阅读每10分钟就能获得5积分，加油！',
   '💡 三兄妹一起比赛，学习更有动力！',
 ];
@@ -1914,7 +1914,7 @@ function renderChildCard(child){
             🎁 兑换奖励（需50积分）
           </button>
           <button class="reward-btn" onclick="addSportScore('${child.id}')" style="background:linear-gradient(135deg,#0ea5e9,#10b981);margin-top:8px;">
-            🏃 运动加分（+30分）
+            🏃 运动加分（+15分）
           </button>
           <p style="font-size:10px;color:#9ca3af;margin-top:4px;text-align:center;">完成运动后由妈妈输入密码审核加分</p>
         </div>
@@ -1945,10 +1945,10 @@ function toggleTask(childId, taskId){
 
   const allDone = child.tasks.every(t => t.done);
   if(allDone && child.tasks.length > 0){
-    child.totalPoints += 20;
-    child.weekPoints += 20;
+    child.totalPoints += 5;
+    child.weekPoints += 5;
     setTimeout(() => {
-      showCelebration('🎉', `${child.nick}全部完成！+20！`);
+      showCelebration('🎉', `${child.nick}全部完成！+5！`);
       spawnFireworks();
     }, 800);
   }
@@ -2005,9 +2005,9 @@ function cycleBookStatus(childId, bookIndex){
   book.status = newStatus;
 
   if(newStatus === 'done' && oldStatus !== 'done'){
-    child.totalPoints += 30;
-    child.weekPoints += 30;
-    showCelebration('📖', `读完一本书！+30分`);
+    child.totalPoints += 20;
+    child.weekPoints += 20;
+    showCelebration('📖', `读完一本书！+20分`);
     spawnFireworks();
   }
   saveData();
@@ -2069,7 +2069,7 @@ function addSportScore(childId){
       <div id="sportPwdError" style="font-size:12px;color:#ef4444;height:16px;"></div>
     </div>`;
   const actions = `<div class="modal-actions">
-    <button class="btn-primary" onclick="confirmSportScore('${childId}')">确认加分 +30</button>
+    <button class="btn-primary" onclick="confirmSportScore('${childId}')">确认加分 +15</button>
     <button class="btn-secondary" onclick="closeModal()">取消</button>
   </div>`;
   showModal('🏃 运动加分', html, actions);
@@ -2086,11 +2086,11 @@ function confirmSportScore(childId){
     return;
   }
   const child = appData.children.find(c => c.id === childId);
-  child.totalPoints += 30;
-  child.weekPoints += 30;
+  child.totalPoints += 15;
+  child.weekPoints += 15;
   saveData();
   closeModal();
-  showCelebration('🏃', `${child.nick}运动加分！+30分`);
+  showCelebration('🏃', `${child.nick}运动加分！+15分`);
   spawnFireworks();
   render();
 }
