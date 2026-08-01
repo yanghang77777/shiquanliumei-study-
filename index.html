@@ -2650,7 +2650,9 @@ function showPetGuide(){
     <h3>⚔️ 第五步：宠物PK</h3>
     <div class="guide-step"><div class="guide-step-num" style="background:#ef4444;">1</div><p>点击工具栏「⚔️ 宠物PK」进入竞技场</p></div>
     <div class="guide-step"><div class="guide-step-num" style="background:#ef4444;">2</div><p>选择模式：<b>1v1单挑</b> 或 <b>1v2以一敌二</b>（奖励翻倍！）</p></div>
-    <div class="guide-step"><div class="guide-step-num" style="background:#ef4444;">3</div><p>宠物自动战斗，孩子观看过程！喂得越多越厉害！</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#ef4444;">3</div><p>发起方选择对手后点「📨 发送挑战邀请」</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#ef4444;">4</div><p>把设备交给被邀请方，每位选手点「✅ 接受」或「❌ 拒绝」</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#ef4444;">5</div><p>全部接受后自动开战！宠物自动战斗，孩子观看过程！喂得越多越厉害！</p></div>
     <div class="guide-demo">
       <span class="guide-demo-emoji">🐱</span> ⚔️ <span class="guide-demo-emoji">🐶</span><br>
       <span style="font-size:11px;">技能特效：⚡啄啄攻击 · 🐾猫爪连击 · 🥚彩蛋炸弹 · 💦水花喷射</span>
@@ -3615,49 +3617,35 @@ function showPKSetup(){
   document.getElementById('pkOverlay').classList.add('show');
 }
 
-let pkSetupState = { mode:null, sideA:[], sideB:[] };
+// 邀请制PK状态
+let pkSetupState = { mode:null, initiator:null, sideA:[], sideB:[], invitees:[], responses:{} };
 
 function showPKFighterSelect(mode){
   const petChildren = appData.children.filter(c => c.pet && c.pet.type);
-  pkSetupState = { mode, sideA:[], sideB:[] };
+  pkSetupState = { mode, initiator:null, sideA:[], sideB:[], invitees:[], responses:{} };
 
   let html = '<div class="pk-setup">';
   html += `<div class="pk-title">⚔️ ${mode==='1v1'?'1v1 单挑':'1v2 以一敌二'}</div>`;
-  html += `<p style="text-align:center;color:rgba(255,255,255,.6);font-size:13px;">${mode==='1v1'?'选择两位选手':'选一人单挑另外两人'}</p>`;
+  html += '<p style="text-align:center;color:rgba(255,255,255,.6);font-size:13px;">第一步：选择发起挑战的选手</p>';
 
-  if(mode === '1v1'){
-    html += '<div style="font-size:13px;color:#fbbf24;margin:10px 0;">选择选手A：</div>';
-    html += '<div class="pk-fighter-select">';
-    petChildren.forEach(c => {
-      html += `<div class="pk-select-card" id="pkA_${c.id}" onclick="selectPKFighter('A','${c.id}')">
-        <div style="font-size:32px;">${PET_TYPES[c.pet.type].face}</div>
-        <div style="font-size:12px;color:#fff;margin-top:4px;">${c.pet.name}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.5);">${c.nick}</div>
-      </div>`;
-    });
-    html += '</div>';
-    html += '<div id="pkBSelect" style="display:none;">';
-    html += '<div style="font-size:13px;color:#fbbf24;margin:10px 0;">选择选手B：</div>';
-    html += '<div class="pk-fighter-select" id="pkBList"></div>';
-    html += '</div>';
-  } else {
-    // 1v2
-    html += '<div style="font-size:13px;color:#fbbf24;margin:10px 0;">选择单挑方（一人）：</div>';
-    html += '<div class="pk-fighter-select">';
-    petChildren.forEach(c => {
-      html += `<div class="pk-select-card" id="pkA_${c.id}" onclick="selectPKFighter1v2('${c.id}')">
-        <div style="font-size:32px;">${PET_TYPES[c.pet.type].face}</div>
-        <div style="font-size:12px;color:#fff;margin-top:4px;">${c.pet.name}</div>
-        <div style="font-size:10px;color:rgba(255,255,255,.5);">${c.nick}</div>
-      </div>`;
-    });
-    html += '</div>';
-    html += '<div id="pkBSelect" style="display:none;">';
-    html += `<div style="text-align:center;color:#fbbf24;font-size:13px;margin:10px 0;">对手（另外两人）</div></div>`;
-  }
+  // 选择发起方
+  html += '<div class="pk-fighter-select">';
+  petChildren.forEach(c => {
+    const clickAttr = 'onclick="selectPKInitiator(\'' + c.id + '\')"';
+    html += `<div class="pk-select-card" id="pkInit_${c.id}" ${clickAttr}>
+      <div style="font-size:32px;">${PET_TYPES[c.pet.type].face}</div>
+      <div style="font-size:12px;color:#fff;margin-top:4px;">${c.pet.name}</div>
+      <div style="font-size:10px;color:rgba(255,255,255,.5);">${c.nick}</div>
+    </div>`;
+  });
+  html += '</div>';
 
-  html += '<div id="pkStartBtn" style="display:none;text-align:center;margin-top:16px;">';
-  html += '<button class="pk-mode-btn" style="background:linear-gradient(135deg,#f59e0b,#ef4444);" onclick="confirmPKStart()">⚔️ 开始战斗！</button>';
+  // 对手选择区域（选择发起方后显示）
+  html += '<div id="pkOpponentSelect" style="display:none;">';
+  html += '<div id="pkOpponentArea"></div>';
+  html += '<div id="pkInviteBtn" style="display:none;text-align:center;margin-top:16px;">';
+  html += '<button class="pk-mode-btn" style="background:linear-gradient(135deg,#f59e0b,#ef4444);" onclick="sendPKInvitations()">📨 发送挑战邀请</button>';
+  html += '</div>';
   html += '</div>';
 
   html += '<button onclick="showPKSetup()" style="margin-top:12px;padding:8px 20px;border-radius:10px;border:none;background:rgba(255,255,255,.1);color:#fff;font-size:12px;cursor:pointer;">← 返回</button>';
@@ -3666,60 +3654,164 @@ function showPKFighterSelect(mode){
   document.getElementById('pkContainer').innerHTML = html;
 }
 
-function selectPKFighter(side, childId){
-  if(side === 'A'){
-    pkSetupState.sideA = [childId];
-    // 更新选中样式
-    appData.children.forEach(c => {
-      const el = document.getElementById('pkA_' + c.id);
-      if(el) el.classList.toggle('selected', c.id === childId);
-    });
-    // 显示B的选择
-    document.getElementById('pkBSelect').style.display = 'block';
-    const petChildren = appData.children.filter(c => c.pet && c.pet.type && c.id !== childId);
-    let listHtml = '';
-    petChildren.forEach(c => {
-      listHtml += `<div class="pk-select-card" id="pkB_${c.id}" onclick="selectPKFighter('B','${c.id}')">
+// 选择发起方
+function selectPKInitiator(childId){
+  pkSetupState.initiator = childId;
+  pkSetupState.sideA = [childId];
+  pkSetupState.responses = {};
+
+  // 更新选中样式
+  appData.children.forEach(c => {
+    const el = document.getElementById('pkInit_' + c.id);
+    if(el) el.classList.toggle('selected', c.id === childId);
+  });
+
+  // 显示对手选择
+  const opponentArea = document.getElementById('pkOpponentArea');
+  const others = appData.children.filter(c => c.pet && c.pet.type && c.id !== childId);
+  const initiator = appData.children.find(c => c.id === childId);
+
+  let html = `<div style="font-size:13px;color:#fbbf24;margin:12px 0;">第二步：${initiator.pet.name} 要挑战谁？</div>`;
+  html += '<div class="pk-fighter-select">';
+
+  if(pkSetupState.mode === '1v1'){
+    // 1v1：选一个对手
+    pkSetupState.sideB = [];
+    others.forEach(c => {
+      const clickAttr = 'onclick="selectPKOpponent(\'' + c.id + '\')"';
+      html += `<div class="pk-select-card" id="pkOpp_${c.id}" ${clickAttr}>
         <div style="font-size:32px;">${PET_TYPES[c.pet.type].face}</div>
         <div style="font-size:12px;color:#fff;margin-top:4px;">${c.pet.name}</div>
         <div style="font-size:10px;color:rgba(255,255,255,.5);">${c.nick}</div>
       </div>`;
     });
-    document.getElementById('pkBList').innerHTML = listHtml;
-    pkSetupState.sideB = [];
-    document.getElementById('pkStartBtn').style.display = 'none';
   } else {
-    pkSetupState.sideB = [childId];
-    appData.children.forEach(c => {
-      const el = document.getElementById('pkB_' + c.id);
-      if(el) el.classList.toggle('selected', c.id === childId);
+    // 1v2：对手自动是另外两人
+    pkSetupState.sideB = others.map(c => c.id);
+    others.forEach(c => {
+      html += `<div class="pk-select-card selected">
+        <div style="font-size:32px;">${PET_TYPES[c.pet.type].face}</div>
+        <div style="font-size:12px;color:#fff;margin-top:4px;">${c.pet.name}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);">${c.nick}</div>
+      </div>`;
     });
-    document.getElementById('pkStartBtn').style.display = 'block';
+  }
+  html += '</div>';
+
+  if(pkSetupState.mode === '1v2'){
+    html += '<div style="text-align:center;color:rgba(255,255,255,.5);font-size:11px;margin:8px 0;">1v2模式下，发起方需挑战另外两位选手</div>';
+  }
+
+  opponentArea.innerHTML = html;
+  document.getElementById('pkOpponentSelect').style.display = 'block';
+
+  // 1v2模式直接可以发起邀请
+  if(pkSetupState.mode === '1v2'){
+    document.getElementById('pkInviteBtn').style.display = 'block';
+  } else {
+    document.getElementById('pkInviteBtn').style.display = 'none';
   }
 }
 
-function selectPKFighter1v2(childId){
-  pkSetupState.sideA = [childId];
+// 选择对手（仅1v1）
+function selectPKOpponent(childId){
+  pkSetupState.sideB = [childId];
   appData.children.forEach(c => {
-    const el = document.getElementById('pkA_' + c.id);
+    const el = document.getElementById('pkOpp_' + c.id);
     if(el) el.classList.toggle('selected', c.id === childId);
   });
-  // B方是另外两个
-  const others = appData.children.filter(c => c.pet && c.pet.type && c.id !== childId);
-  pkSetupState.sideB = others.map(c => c.id);
-  let bHtml = '<div style="text-align:center;color:#fbbf24;font-size:13px;margin:10px 0;">对手（另外两人）</div>';
-  bHtml += '<div class="pk-fighter-select">';
-  others.forEach(c => {
-    bHtml += `<div class="pk-select-card selected">
-      <div style="font-size:32px;">${PET_TYPES[c.pet.type].face}</div>
-      <div style="font-size:12px;color:#fff;margin-top:4px;">${c.pet.name}</div>
-      <div style="font-size:10px;color:rgba(255,255,255,.5);">${c.nick}</div>
-    </div>`;
+  document.getElementById('pkInviteBtn').style.display = 'block';
+}
+
+// 发送挑战邀请 → 进入等待确认阶段
+function sendPKInvitations(){
+  pkSetupState.invitees = [...pkSetupState.sideB];
+  pkSetupState.responses = {};
+  pkSetupState.invitees.forEach(id => { pkSetupState.responses[id] = 'pending'; });
+  renderPKInvitationStatus();
+}
+
+// 渲染邀请等待/确认界面
+function renderPKInvitationStatus(){
+  const initiator = appData.children.find(c => c.id === pkSetupState.initiator);
+  const mode = pkSetupState.mode;
+  const invitees = pkSetupState.invitees.map(id => appData.children.find(c => c.id === id));
+
+  let html = '<div class="pk-setup">';
+  html += `<div class="pk-title">⚔️ 挑战邀请</div>`;
+
+  // 发起方信息
+  html += `<div style="background:rgba(251,191,36,.15);border-radius:14px;padding:12px;margin:10px 0;text-align:center;">`;
+  html += `<div style="font-size:13px;color:#fbbf24;">${initiator.pet.name}（${initiator.nick}）发起挑战！</div>`;
+  html += `<div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px;">模式：${mode==='1v1'?'1v1 单挑':'1v2 以一敌二'}</div>`;
+  html += `</div>`;
+
+  html += '<p style="text-align:center;color:rgba(255,255,255,.6);font-size:13px;margin:12px 0;">等待对手确认...</p>';
+
+  // 每个被邀请方的确认卡片
+  invitees.forEach(c => {
+    const status = pkSetupState.responses[c.id];
+    const pt = PET_TYPES[c.pet.type];
+    let statusHtml = '';
+    let actionHtml = '';
+    if(status === 'pending'){
+      statusHtml = '<span style="color:#fbbf24;">⏳ 等待确认</span>';
+      actionHtml = `<button class="pk-mode-btn" style="background:linear-gradient(135deg,#22c55e,#16a34a);padding:8px 20px;font-size:13px;" onclick="respondPKInvitation('${c.id}','accepted')">✅ 接受挑战</button>`;
+      actionHtml += `<button class="pk-mode-btn" style="background:linear-gradient(135deg,#ef4444,#dc2626);padding:8px 20px;font-size:13px;margin-left:6px;" onclick="respondPKInvitation('${c.id}','rejected')">❌ 拒绝</button>`;
+    } else if(status === 'accepted'){
+      statusHtml = '<span style="color:#4ade80;">✅ 已接受</span>';
+      actionHtml = '';
+    } else {
+      statusHtml = '<span style="color:#f87171;">❌ 已拒绝</span>';
+      actionHtml = '';
+    }
+
+    html += `<div style="background:rgba(255,255,255,.1);border-radius:14px;padding:12px;margin:8px 0;">`;
+    html += `<div style="display:flex;align-items:center;gap:10px;">`;
+    html += `<div style="font-size:32px;">${pt.face}</div>`;
+    html += `<div style="flex:1;">`;
+    html += `<div style="font-size:14px;color:#fff;font-weight:700;">${c.pet.name}</div>`;
+    html += `<div style="font-size:10px;color:rgba(255,255,255,.5);">${c.nick}</div>`;
+    html += `</div>`;
+    html += `<div style="font-size:12px;">${statusHtml}</div>`;
+    html += `</div>`;
+    if(actionHtml){
+      html += `<div style="text-align:center;margin-top:10px;">${actionHtml}</div>`;
+    }
+    html += `</div>`;
   });
-  bHtml += '</div>';
-  document.getElementById('pkBSelect').innerHTML = bHtml;
-  document.getElementById('pkBSelect').style.display = 'block';
-  document.getElementById('pkStartBtn').style.display = 'block';
+
+  // 检查是否全部已响应
+  const allResponded = invitees.every(c => pkSetupState.responses[c.id] !== 'pending');
+  const anyRejected = invitees.some(c => pkSetupState.responses[c.id] === 'rejected');
+  const allAccepted = invitees.every(c => pkSetupState.responses[c.id] === 'accepted');
+
+  if(anyRejected){
+    html += `<div style="text-align:center;color:#f87171;font-size:14px;margin:16px 0;font-weight:700;">挑战已取消！</div>`;
+    html += '<div style="text-align:center;margin-top:8px;">';
+    html += '<button class="pk-mode-btn" onclick="showPKSetup()">← 重新发起</button>';
+    html += '<button class="pk-mode-btn" onclick="closePKArena()">关闭</button>';
+    html += '</div>';
+  } else if(allAccepted && allResponded){
+    html += `<div style="text-align:center;color:#fbbf24;font-size:14px;margin:16px 0;font-weight:700;">所有选手已就绪！准备开战！🔥</div>`;
+    html += '<div style="text-align:center;margin-top:8px;">';
+    html += '<button class="pk-mode-btn" style="background:linear-gradient(135deg,#f59e0b,#ef4444);" onclick="confirmPKStart()">⚔️ 开始战斗！</button>';
+    html += '</div>';
+  } else {
+    html += '<div style="text-align:center;color:rgba(255,255,255,.4);font-size:11px;margin:12px 0;">把设备交给被邀请方，让他们点击确认按钮</div>';
+    html += '<button onclick="showPKSetup()" style="margin-top:8px;padding:8px 20px;border-radius:10px;border:none;background:rgba(255,255,255,.1);color:#fff;font-size:12px;cursor:pointer;display:block;margin:0 auto;">← 取消邀请</button>';
+  }
+
+  html += '</div>';
+
+  document.getElementById('pkContainer').innerHTML = html;
+  document.getElementById('pkOverlay').classList.add('show');
+}
+
+// 被邀请方响应
+function respondPKInvitation(childId, response){
+  pkSetupState.responses[childId] = response;
+  renderPKInvitationStatus();
 }
 
 function confirmPKStart(){
