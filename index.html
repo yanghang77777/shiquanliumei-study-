@@ -1432,11 +1432,26 @@ const EXTRA_MATH = {
 //  宠物系统常量
 // ============================================================
 const PET_TYPES = {
-  chick:  { name:'小鸡', emoji:'🐣', face:'🐥', desc:'活泼好动，喜欢谷物', preferFood:'seed',  baseSkill:'peck',        baseAttack:8, baseDefense:5, baseSpeed:7, skillPool:['peck','flutter','eggBomb'],  moodEmoji:{hungry:'🐤',sad:'😥',happy:'🐥',full:'😊',excited:'🤩'} },
-  puppy:  { name:'小狗', emoji:'🐶', face:'🐕', desc:'忠诚勇敢，喜欢骨头', preferFood:'bone',  baseSkill:'bite',        baseAttack:9, baseDefense:7, baseSpeed:5, skillPool:['bite','bark','guardian'],     moodEmoji:{hungry:'🥺',sad:'😢',happy:'🐶',full:'😴',excited:'🤩'} },
-  turtle: { name:'小乌龟',emoji:'🐢', face:'🐢', desc:'沉稳坚韧，喜欢蔬菜', preferFood:'veggie',baseSkill:'shellDefend', baseAttack:5, baseDefense:10,baseSpeed:3, skillPool:['shellDefend','waterGun','slowHeal'], moodEmoji:{hungry:'😰',sad:'😞',happy:'🐢',full:'😌',excited:'🤩'} },
-  cat:    { name:'小猫', emoji:'🐱', face:'🐈', desc:'优雅灵巧，喜欢小鱼', preferFood:'fish',  baseSkill:'scratch',     baseAttack:7, baseDefense:6, baseSpeed:8, skillPool:['scratch','meowSong','pounce'],  moodEmoji:{hungry:'🙀',sad:'😿',happy:'😻',full:'😸',excited:'🤩'} },
+  chick:  { name:'小鸡', emoji:'🐣', face:'🐥', desc:'活泼好动，喜欢谷物', preferFood:'seed',  baseSkill:'peck',        baseAttack:8, baseDefense:5, baseSpeed:7, skillPool:['peck','flutter','eggBomb'],  moodEmoji:{hungry:'🐤',sad:'😥',happy:'🐥',full:'😊',excited:'🤩'},
+            stages:[ {minLevel:1,face:'🐥',name:'小鸡',emoji:'🐣'}, {minLevel:5,face:'🐔',name:'公鸡',emoji:'🐤'}, {minLevel:10,face:'🦅',name:'雄鹰',emoji:'🦅'} ] },
+  puppy:  { name:'小狗', emoji:'🐶', face:'🐕', desc:'忠诚勇敢，喜欢骨头', preferFood:'bone',  baseSkill:'bite',        baseAttack:9, baseDefense:7, baseSpeed:5, skillPool:['bite','bark','guardian'],     moodEmoji:{hungry:'🥺',sad:'😢',happy:'🐶',full:'😴',excited:'🤩'},
+            stages:[ {minLevel:1,face:'🐕',name:'小狗',emoji:'🐶'}, {minLevel:5,face:'🐶',name:'大狗',emoji:'🐕‍🦺'}, {minLevel:10,face:'🐺',name:'狼王',emoji:'🐺'} ] },
+  turtle: { name:'小乌龟',emoji:'🐢', face:'🐢', desc:'沉稳坚韧，喜欢蔬菜', preferFood:'veggie',baseSkill:'shellDefend', baseAttack:5, baseDefense:10,baseSpeed:3, skillPool:['shellDefend','waterGun','slowHeal'], moodEmoji:{hungry:'😰',sad:'😞',happy:'🐢',full:'😌',excited:'🤩'},
+            stages:[ {minLevel:1,face:'🐢',name:'小龟',emoji:'🐢'}, {minLevel:5,face:'🐢',name:'大龟',emoji:'🐢'}, {minLevel:10,face:'🐲',name:'龙龟',emoji:'🐲'} ] },
+  cat:    { name:'小猫', emoji:'🐱', face:'🐈', desc:'优雅灵巧，喜欢小鱼', preferFood:'fish',  baseSkill:'scratch',     baseAttack:7, baseDefense:6, baseSpeed:8, skillPool:['scratch','meowSong','pounce'],  moodEmoji:{hungry:'🙀',sad:'😿',happy:'😻',full:'😸',excited:'🤩'},
+            stages:[ {minLevel:1,face:'🐈',name:'小猫',emoji:'🐱'}, {minLevel:5,face:'🐱',name:'大猫',emoji:'😺'}, {minLevel:10,face:'🐯',name:'虎王',emoji:'🐯'} ] },
 };
+
+// 获取宠物当前形态（根据等级进化）
+function getPetStage(petType, level){
+  const pt = PET_TYPES[petType];
+  if(!pt || !pt.stages) return { face: pt ? pt.face : '❓', name: pt ? pt.name : '', emoji: pt ? pt.emoji : '❓' };
+  let stage = pt.stages[0];
+  for(const s of pt.stages){
+    if(level >= s.minLevel) stage = s;
+  }
+  return stage;
+}
 const FOODS = {
   seed:   { name:'谷物种子', emoji:'🌾', cost:5,  satiety:15, exp:5,  rarity:'common' },
   bone:   { name:'骨头饼干', emoji:'🦴', cost:5,  satiety:15, exp:5,  rarity:'common' },
@@ -1459,10 +1474,14 @@ const SKILLS = {
   pounce:      { name:'猛扑突袭',   emoji:'💥', power:16, type:'attack',  desc:'蓄力一跃猛扑过去' },
 };
 const ARMORS = {
-  leaf:    { name:'树叶斗篷', emoji:'🍃', bonus:3,  cost:30,  desc:'用树叶编的可爱斗篷，防御+3' },
-  flower:  { name:'花环铠甲', emoji:'🌸', bonus:5,  cost:50,  desc:'鲜花编成的花环铠甲，防御+5' },
-  star:    { name:'星辰战甲', emoji:'⭐', bonus:8,  cost:80,  desc:'用星光编织的战甲，防御+8' },
-  rainbow: { name:'彩虹圣衣', emoji:'🌈', bonus:12, cost:120, desc:'传说中的彩虹圣衣，防御+12' },
+  leaf:    { name:'树叶斗篷', emoji:'🍃', bonus:3,  cost:20,  minLevel:1,  desc:'用树叶编的可爱斗篷，防御+3', tier:'普通' },
+  star:    { name:'星辰战甲', emoji:'⭐', bonus:6,  cost:50,  minLevel:5,  desc:'用星光编织的战甲，防御+6', tier:'中级' },
+  rainbow: { name:'彩虹圣衣', emoji:'🌈', bonus:10, cost:100, minLevel:10, desc:'传说中的彩虹圣衣，防御+10', tier:'高级' },
+};
+const WEAPONS = {
+  wood:    { name:'木剑',   emoji:'🪵', bonus:3,  cost:20,  minLevel:1,  desc:'简单的木剑，攻击+3', tier:'普通' },
+  iron:    { name:'铁剑',   emoji:'⚔️', bonus:6,  cost:50,  minLevel:5,  desc:'锋利的铁剑，攻击+6', tier:'中级' },
+  divine:  { name:'神剑',   emoji:'✨', bonus:10, cost:100, minLevel:10, desc:'闪耀的神剑，攻击+10', tier:'高级' },
 };
 const QUEST_CONFIG = { stagesPerDay:3, totalStages:30, rewardPerStage:10, bonusFoodPerStage:1, bossReward:30 };
 const QUEST_SCENES = [
@@ -1474,6 +1493,7 @@ const QUEST_SCENES = [
   '终极考验','荣耀之巅','梦想终点','星辰大海','圆满归途'
 ];
 const MOOD_TEXT = { hungry:'肚子咕咕叫...', sad:'有点不开心...', happy:'心情不错！', excited:'超级开心！', full:'吃得饱饱的~' };
+const CHORE_POINTS = { c1: 2, c2: 7, c3: 7 }; // 家务积分：大的少，小的多，拉平三宝收入
 
 const DEFAULT_DATA = {
   children: [
@@ -1490,10 +1510,11 @@ const DEFAULT_DATA = {
       weekPoints: 0,
       streak: 0,
       lastCheckIn: '',
+      lastChoreDate: '',
       readingMinutes: 0,
       readingLog: {},
 
-      pet: { type:null, name:'', level:1, exp:0, satiety:60, mood:'happy', lastFedTime:'', armor:null, skillSlot:null, pkWins:0, pkLosses:0, feedCount:0, totalFoodFed:0 },
+      pet: { type:null, name:'', level:1, exp:0, satiety:60, mood:'happy', lastFedTime:'', armor:null, weapon:null, skillSlot:null, pkWins:0, pkLosses:0, feedCount:0, totalFoodFed:0 },
       foodBag: { seed:0, bone:0, veggie:0, fish:0, cake:0 },
       questState: { currentStage:1, todayCleared:[], lastClearDate:'', totalCleared:0 },
       tasks: [
@@ -1526,10 +1547,11 @@ const DEFAULT_DATA = {
       weekPoints: 0,
       streak: 0,
       lastCheckIn: '',
+      lastChoreDate: '',
       readingMinutes: 0,
       readingLog: {},
 
-      pet: { type:null, name:'', level:1, exp:0, satiety:60, mood:'happy', lastFedTime:'', armor:null, skillSlot:null, pkWins:0, pkLosses:0, feedCount:0, totalFoodFed:0 },
+      pet: { type:null, name:'', level:1, exp:0, satiety:60, mood:'happy', lastFedTime:'', armor:null, weapon:null, skillSlot:null, pkWins:0, pkLosses:0, feedCount:0, totalFoodFed:0 },
       foodBag: { seed:0, bone:0, veggie:0, fish:0, cake:0 },
       questState: { currentStage:1, todayCleared:[], lastClearDate:'', totalCleared:0 },
       tasks: [
@@ -1561,10 +1583,11 @@ const DEFAULT_DATA = {
       weekPoints: 0,
       streak: 0,
       lastCheckIn: '',
+      lastChoreDate: '',
       readingMinutes: 0,
       readingLog: {},
 
-      pet: { type:null, name:'', level:1, exp:0, satiety:60, mood:'happy', lastFedTime:'', armor:null, skillSlot:null, pkWins:0, pkLosses:0, feedCount:0, totalFoodFed:0 },
+      pet: { type:null, name:'', level:1, exp:0, satiety:60, mood:'happy', lastFedTime:'', armor:null, weapon:null, skillSlot:null, pkWins:0, pkLosses:0, feedCount:0, totalFoodFed:0 },
       foodBag: { seed:0, bone:0, veggie:0, fish:0, cake:0 },
       questState: { currentStage:1, todayCleared:[], lastClearDate:'', totalCleared:0 },
       tasks: [
@@ -1916,7 +1939,10 @@ function renderChildCard(child){
           <button class="reward-btn" onclick="addSportScore('${child.id}')" style="background:linear-gradient(135deg,#0ea5e9,#10b981);margin-top:8px;">
             🏃 运动加分（+15分）
           </button>
-          <p style="font-size:10px;color:#9ca3af;margin-top:4px;text-align:center;">完成运动后由妈妈输入密码审核加分</p>
+          <button class="reward-btn" onclick="addChoreScore('${child.id}')" style="background:linear-gradient(135deg,#8b5cf6,#a855f7);margin-top:8px;">
+            🧹 家务加分（+${CHORE_POINTS[child.id]||3}分）
+          </button>
+          <p style="font-size:10px;color:#9ca3af;margin-top:4px;text-align:center;">运动/家务由妈妈输入密码审核，每天各限1次</p>
         </div>
       </div>
     </div>
@@ -2091,6 +2117,61 @@ function confirmSportScore(childId){
   saveData();
   closeModal();
   showCelebration('🏃', `${child.nick}运动加分！+15分`);
+  spawnFireworks();
+  render();
+}
+
+// === 家务积分系统 ===
+function addChoreScore(childId){
+  const child = appData.children.find(c => c.id === childId);
+  if(!child) return;
+  const today = getToday();
+  if(child.lastChoreDate === today){
+    showToast(`${child.nick}今天已经加过家务分了！`);
+    return;
+  }
+  const pts = CHORE_POINTS[childId] || 3;
+  const html = `
+    <div style="text-align:center;margin:10px 0;">
+      <div style="font-size:48px;">🧹</div>
+      <p style="font-size:14px;color:#4b5563;margin:10px 0;">为 <strong>${child.nick}</strong> 添加家务积分 <span style="color:#16a34a;font-weight:700;">+${pts}分</span></p>
+      <p style="font-size:12px;color:#9ca3af;margin-bottom:14px;">请妈妈输入审核密码（每天限1次）</p>
+      <input type="password" id="chorePwdInput" placeholder="请输入密码" maxlength="10"
+        style="width:60%;padding:12px 16px;border-radius:12px;border:2px solid #e5e7eb;font-size:16px;text-align:center;margin-bottom:10px;"
+        onkeydown="if(event.key==='Enter')confirmChoreScore('${childId}')">
+      <div id="chorePwdError" style="font-size:12px;color:#ef4444;height:16px;"></div>
+    </div>`;
+  const actions = `<div class="modal-actions">
+    <button class="btn-primary" onclick="confirmChoreScore('${childId}')">确认加分 +${pts}</button>
+    <button class="btn-secondary" onclick="closeModal()">取消</button>
+  </div>`;
+  showModal('🧹 家务加分', html, actions);
+  setTimeout(() => { const inp = document.getElementById('chorePwdInput'); if(inp) inp.focus(); }, 100);
+}
+
+function confirmChoreScore(childId){
+  const inp = document.getElementById('chorePwdInput');
+  const pwd = inp ? inp.value.trim() : '';
+  if(pwd !== 'H890726'){
+    const errEl = document.getElementById('chorePwdError');
+    if(errEl) errEl.textContent = '密码错误，请妈妈输入正确密码';
+    if(inp) { inp.value = ''; inp.focus(); }
+    return;
+  }
+  const child = appData.children.find(c => c.id === childId);
+  const pts = CHORE_POINTS[childId] || 3;
+  const today = getToday();
+  if(child.lastChoreDate === today){
+    showToast(`${child.nick}今天已经加过家务分了！`);
+    closeModal();
+    return;
+  }
+  child.totalPoints += pts;
+  child.weekPoints += pts;
+  child.lastChoreDate = today;
+  saveData();
+  closeModal();
+  showCelebration('🧹', `${child.nick}家务加分！+${pts}分`);
   spawnFireworks();
   render();
 }
@@ -2584,6 +2665,14 @@ function initPetSystem(){
   appData.children.forEach(c => {
     if(c.pet && c.pet.type){
       decaySatiety(c.pet);
+      // 数据迁移：补充新字段
+      if(c.pet.weapon === undefined) c.pet.weapon = null;
+    }
+    if(c.lastChoreDate === undefined) c.lastChoreDate = '';
+    // 盔甲迁移：旧4级盔甲映射到新3级
+    if(c.pet && c.pet.armor){
+      const armorMap = { flower: 'leaf', star: 'star' }; // flower→leaf(普通), star保留, rainbow→rainbow改名
+      if(armorMap[c.pet.armor]) c.pet.armor = armorMap[c.pet.armor];
     }
   });
   saveData();
@@ -2658,6 +2747,32 @@ function showPetGuide(){
       <span style="font-size:11px;">技能特效：⚡啄啄攻击 · 🐾猫爪连击 · 🥚彩蛋炸弹 · 💦水花喷射</span>
     </div>
     <p style="font-size:12px;color:#9ca3af;margin-top:6px;">💡 胜者+10积分+1蛋糕+20经验；败者+5经验参与奖。1v2单挑方胜利奖励翻倍！</p>
+  </div>
+
+  <div class="guide-section" style="background:linear-gradient(135deg,#faf5ff,#f3e8ff);">
+    <h3>🧹 第六步：家务加分</h3>
+    <div class="guide-step"><div class="guide-step-num" style="background:#8b5cf6;">1</div><p>完成家务后，找妈妈审核加分（密码由妈妈输入）</p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#8b5cf6;">2</div><p>每天限1次：<b>淳宝+2分</b> / <b>悦宝+7分</b> / <b>东哥+7分</b></p></div>
+    <div class="guide-step"><div class="guide-step-num" style="background:#8b5cf6;">3</div><p>小宝家务分高一些，让三宝积分更公平！</p></div>
+    <div class="guide-demo">🧹 扫地 · 🧽 擦桌子 · 📦 整理房间 · 🌟 帮妈妈做事<br><span style="font-size:11px;">运动+15分 / 家务加分，都由妈妈审核</span></div>
+  </div>
+
+  <div class="guide-section" style="background:linear-gradient(135deg,#ecfeff,#cffafe);">
+    <h3>✨ 第七步：宠物进化 & 装备</h3>
+    <div class="guide-step"><div class="guide-step-num" style="background:#06b6d4;">1</div><p>宠物达到<b>Lv.5</b>和<b>Lv.10</b>时会<b>进化</b>，形态变强变帅！</p></div>
+    <div class="guide-demo">
+      🐥小鸡 → 🐔公鸡 → 🦅雄鹰<br>
+      🐕小狗 → 🐶大狗 → 🐺狼王<br>
+      🐢小龟 → 🐢大龟 → 🐲龙龟<br>
+      🐈小猫 → 🐱大猫 → 🐯虎王
+    </div>
+    <div class="guide-step" style="margin-top:10px;"><div class="guide-step-num" style="background:#06b6d4;">2</div><p>商店可购买<b>武器</b>（加攻击）和<b>铠甲</b>（加防御），各分三级：</p></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin:8px 0;font-size:12px;">
+      <div style="background:#f0fdf4;border-radius:8px;padding:6px 10px;">🪵木剑+3<br>🍃树叶甲+3<br><span style="font-size:10px;color:#16a34a;">普通 Lv.1 · 20分</span></div>
+      <div style="background:#fef3c7;border-radius:8px;padding:6px 10px;">⚔️铁剑+6<br>⭐星辰甲+6<br><span style="font-size:10px;color:#d97706;">中级 Lv.5 · 50分</span></div>
+      <div style="background:#fce7f3;border-radius:8px;padding:6px 10px;">✨神剑+10<br>🌈彩虹甲+10<br><span style="font-size:10px;color:#be185d;">高级 Lv.10 · 100分</span></div>
+    </div>
+    <p style="font-size:12px;color:#9ca3af;margin-top:6px;">💡 装备等级越高加成越多，需要达到对应等级才能装备！</p>
   </div>
 
   <div class="guide-section" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);text-align:center;">
@@ -2765,10 +2880,11 @@ function renderPetMiniCard(child){
   const mood = getPetMood(pet);
   const satColor = pet.satiety > 60 ? '#22c55e' : pet.satiety > 30 ? '#f59e0b' : '#ef4444';
   const armorEmoji = pet.armor ? ARMORS[pet.armor].emoji : '';
+  const weaponEmoji = pet.weapon ? WEAPONS[pet.weapon].emoji : '';
   return `<div class="pet-mini-card" onclick="openPetDetail('${child.id}')">
     <div class="pet-avatar">${pt.moodEmoji[mood]}</div>
     <div class="pet-meta">
-      <div class="pet-name">${pet.name} ${armorEmoji} <span class="pet-lv-badge">Lv.${pet.level}</span></div>
+      <div class="pet-name">${pet.name} ${armorEmoji}${weaponEmoji} <span class="pet-lv-badge">Lv.${pet.level}</span></div>
       <div class="pet-satiety-track"><div class="pet-satiety-fill" style="width:${pet.satiety}%;background:${satColor};"></div></div>
       <div class="pet-mood-text">🍖 ${pet.satiety}/100 · ${MOOD_TEXT[mood]}</div>
     </div>
@@ -2839,9 +2955,10 @@ function renderPetPanel(childId){
   </div>`;
 
   // 宠物大头像
-  html += `<div class="pet-big-avatar">${pt.moodEmoji[mood]}</div>`;
-  html += `<div class="pet-display-name">${pet.name} ${pet.armor ? ARMORS[pet.armor].emoji : ''}</div>`;
-  html += `<div class="pet-display-sub">${pt.name} · Lv.${pet.level} · ${MOOD_TEXT[mood]}</div>`;
+  const stage = getPetStage(pet.type, pet.level);
+  html += `<div class="pet-big-avatar">${stage.face}</div>`;
+  html += `<div class="pet-display-name">${pet.name} ${pet.armor ? ARMORS[pet.armor].emoji : ''} ${pet.weapon ? WEAPONS[pet.weapon].emoji : ''}</div>`;
+  html += `<div class="pet-display-sub">${stage.name} · Lv.${pet.level} · ${MOOD_TEXT[mood]}</div>`;
 
   // 等级和经验：Lv(n)→(n+1)需 10+(n-1)*5
   const expNeeded = 10 + (pet.level - 1) * 5;
@@ -2871,9 +2988,12 @@ function renderPetPanel(childId){
   const skillName = pet.skillSlot ? SKILLS[pet.skillSlot].name : '未装备';
   const skillEmoji = pet.skillSlot ? SKILLS[pet.skillSlot].emoji : '';
   const armorName = pet.armor ? ARMORS[pet.armor].name : '未装备';
+  const weaponName = pet.weapon ? WEAPONS[pet.weapon].name : '未装备';
+  const weaponEmojiStr = pet.weapon ? WEAPONS[pet.weapon].emoji : '';
   html += `<div style="background:#f9fafb;border-radius:12px;padding:10px;margin:10px 0;font-size:13px;">
+    <div>⚔️ 武器：<strong>${weaponEmojiStr} ${weaponName}</strong></div>
     <div>🛡️ 铠甲：<strong>${armorName}</strong></div>
-    <div>⚔️ 技能：<strong>${skillEmoji} ${skillName}</strong></div>
+    <div>✨ 技能：<strong>${skillEmoji} ${skillName}</strong></div>
     <div>📊 战绩：<strong>${pet.pkWins}胜 ${pet.pkLosses}负</strong></div>
   </div>`;
 
@@ -2886,6 +3006,26 @@ function renderPetPanel(childId){
   </div>`;
 
   if(petPanelTab === 'home'){
+    // 进化信息
+    if(pt.stages){
+      html += `<div style="margin-top:10px;background:linear-gradient(135deg,#faf5ff,#fce7f3);border-radius:12px;padding:10px;margin-bottom:10px;">`;
+      html += `<div style="font-size:13px;font-weight:700;margin-bottom:6px;">✨ 进化之路</div>`;
+      html += `<div style="display:flex;justify-content:space-around;align-items:center;">`;
+      pt.stages.forEach((s, i) => {
+        const isCurrent = level >= s.minLevel && (i === pt.stages.length-1 || level < pt.stages[i+1].minLevel);
+        const isPast = level >= s.minLevel;
+        html += `<div style="text-align:center;${isPast?'':'opacity:.3;'}">`;
+        html += `<div style="font-size:${isCurrent?'32px':'24px'};${isCurrent?'animation:petBob 1.5s ease-in-out infinite;':''}">${s.emoji}</div>`;
+        html += `<div style="font-size:11px;font-weight:${isCurrent?'700':'400'};color:${isCurrent?'#7c3aed':'#6b7280'};">${s.name}</div>`;
+        html += `<div style="font-size:10px;color:#9ca3af;">Lv.${s.minLevel}</div>`;
+        html += `</div>`;
+        if(i < pt.stages.length - 1){
+          html += `<span style="color:#c4b5fd;font-size:16px;">→</span>`;
+        }
+      });
+      html += `</div></div>`;
+    }
+
     // 技能列表
     html += `<div style="margin-top:10px;"><div style="font-size:13px;font-weight:700;margin-bottom:8px;">⚔️ 技能列表</div>`;
     pt.skillPool.forEach((skId, i) => {
@@ -2947,13 +3087,34 @@ function renderPetPanel(childId){
     Object.keys(ARMORS).forEach(aid => {
       const ar = ARMORS[aid];
       const owned = pet.armor === aid;
-      const canBuy = child.totalPoints >= ar.cost && !owned;
-      html += `<div class="pet-food-card ${owned?'':'disabled'}" style="${owned?'border-color:#10b981;':''}">
+      const levelLocked = pet.level < ar.minLevel;
+      const canBuy = child.totalPoints >= ar.cost && !owned && !levelLocked;
+      html += `<div class="pet-food-card ${owned?'':'disabled'}" style="${owned?'border-color:#10b981;':''}${levelLocked?'opacity:.5;':''}">
         <div class="pet-food-emoji">${ar.emoji}</div>
         <div class="pet-food-name">${ar.name}</div>
-        <div class="pet-food-effect">防御+${ar.bonus}</div>
+        <div class="pet-food-effect">防御+${ar.bonus} · ${ar.tier}</div>
         ${owned ? '<div style="font-size:11px;color:#10b981;font-weight:600;">已装备</div>' :
+          levelLocked ? `<div style="font-size:11px;color:#ef4444;">🔒 Lv.${ar.minLevel}解锁</div>` :
           `<button class="pet-buy-btn" ${canBuy?'':'disabled'} onclick="buyArmor('${childId}','${aid}')">${ar.cost}积分</button>`}
+      </div>`;
+    });
+    html += `</div></div>`;
+
+    // 武器商店
+    html += `<div style="margin-top:16px;"><div style="font-size:13px;font-weight:700;margin-bottom:4px;">⚔️ 武器商店</div>`;
+    html += `<div class="pet-food-grid">`;
+    Object.keys(WEAPONS).forEach(wid => {
+      const wp = WEAPONS[wid];
+      const owned = pet.weapon === wid;
+      const levelLocked = pet.level < wp.minLevel;
+      const canBuy = child.totalPoints >= wp.cost && !owned && !levelLocked;
+      html += `<div class="pet-food-card ${owned?'':'disabled'}" style="${owned?'border-color:#f59e0b;':''}${levelLocked?'opacity:.5;':''}">
+        <div class="pet-food-emoji">${wp.emoji}</div>
+        <div class="pet-food-name">${wp.name}</div>
+        <div class="pet-food-effect">攻击+${wp.bonus} · ${wp.tier}</div>
+        ${owned ? '<div style="font-size:11px;color:#f59e0b;font-weight:600;">已装备</div>' :
+          levelLocked ? `<div style="font-size:11px;color:#ef4444;">🔒 Lv.${wp.minLevel}解锁</div>` :
+          `<button class="pet-buy-btn" ${canBuy?'':'disabled'} onclick="buyWeapon('${childId}','${wid}')">${wp.cost}积分</button>`}
       </div>`;
     });
     html += `</div></div>`;
@@ -3008,7 +3169,7 @@ function showFeedAnimation(childId){
   overlay.style.cssText = 'position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;flex-direction:column;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);animation:fadeIn .3s;';
   overlay.id = 'feedAnimOverlay';
   overlay.innerHTML = `
-    <div style="font-size:80px;animation:petBob 1s ease-in-out infinite;">${pt.face}</div>
+    <div style="font-size:80px;animation:petBob 1s ease-in-out infinite;">${getPetStage(child.pet.type, child.pet.level).face}</div>
     <div style="color:#fff;font-size:18px;font-weight:700;margin-top:16px;text-align:center;max-width:80%;line-height:1.6;">${greeting ? greeting.text : ''}</div>
     <div style="margin-top:20px;font-size:13px;color:rgba(255,255,255,.5);">💡 点击关闭</div>`;
   overlay.onclick = () => { overlay.remove(); };
@@ -3067,15 +3228,28 @@ function checkPetLevelUp(childId){
   const child = appData.children.find(c => c.id === childId);
   const pet = child.pet;
   // 升级所需：Lv1→2需10, Lv2→3需15, Lv3→4需20, Lv(n)→(n+1)需 10+(n-1)*5
-  // 即每级递增5，起步10
   function expNeeded(level){ return 10 + (level - 1) * 5; }
   let leveledUp = false;
+  const oldLevel = pet.level;
   while(pet.exp >= expNeeded(pet.level)){
     pet.exp -= expNeeded(pet.level);
     pet.level++;
     leveledUp = true;
   }
   if(leveledUp){
+    // 检查是否进化
+    const pt = PET_TYPES[pet.type];
+    if(pt && pt.stages){
+      const oldStage = getPetStage(pet.type, oldLevel);
+      const newStage = getPetStage(pet.type, pet.level);
+      if(oldStage.name !== newStage.name){
+        setTimeout(() => {
+          showCelebration(newStage.emoji, `✨ ${pet.name}进化了！变成了${newStage.name}！`);
+          spawnFireworks();
+        }, 800);
+        return; // 进化动画优先，不重复显示升级
+      }
+    }
     setTimeout(() => {
       showCelebration('🎉', `${pet.name}升级了！Lv.${pet.level}！`);
       spawnFireworks();
@@ -3113,6 +3287,10 @@ function buyArmor(childId, armorId){
   const child = appData.children.find(c => c.id === childId);
   if(!child || !child.pet) return;
   const ar = ARMORS[armorId];
+  if(child.pet.level < ar.minLevel){
+    showToast(`需要Lv.${ar.minLevel}才能装备！`);
+    return;
+  }
   if(child.totalPoints < ar.cost){
     showToast('积分不足！');
     return;
@@ -3125,13 +3303,34 @@ function buyArmor(childId, armorId){
   render();
 }
 
+function buyWeapon(childId, weaponId){
+  const child = appData.children.find(c => c.id === childId);
+  if(!child || !child.pet) return;
+  const wp = WEAPONS[weaponId];
+  if(child.pet.level < wp.minLevel){
+    showToast(`需要Lv.${wp.minLevel}才能装备！`);
+    return;
+  }
+  if(child.totalPoints < wp.cost){
+    showToast('积分不足！');
+    return;
+  }
+  child.totalPoints -= wp.cost;
+  child.pet.weapon = weaponId;
+  saveData();
+  showToast(`装备了${wp.name}！攻击+${wp.bonus}`);
+  renderPetPanel(childId);
+  render();
+}
+
 // === 战斗力计算 ===
 function calcCombatPower(child){
   const pet = child.pet;
   if(!pet || !pet.type) return { attack:0, defense:0, speed:0, maxHp:0, cp:0 };
   const pt = PET_TYPES[pet.type];
   const armorBonus = pet.armor ? ARMORS[pet.armor].bonus : 0;
-  const attack = Math.floor(pt.baseAttack + pet.level * 2 + pet.totalFoodFed / 20);
+  const weaponBonus = pet.weapon ? WEAPONS[pet.weapon].bonus : 0;
+  const attack = Math.floor(pt.baseAttack + pet.level * 2 + weaponBonus + pet.totalFoodFed / 20);
   const defense = Math.floor(pt.baseDefense + pet.level * 1.5 + armorBonus + pet.totalFoodFed / 30);
   const speed = Math.floor(pt.baseSpeed + pet.level * 0.5);
   const maxHp = Math.floor(50 + pet.level * 10 + pet.totalFoodFed / 10);
@@ -3565,7 +3764,7 @@ function openPKArena(){
     html += `<div style="text-align:center;color:#e0e7ff;margin:20px 0;">至少需要2只宠物才能PK！</div>`;
     html += `<p style="color:rgba(255,255,255,.6);font-size:13px;">已拥有宠物：${petChildren.length}/3</p>`;
     petChildren.forEach(c => {
-      html += `<div style="color:#fff;font-size:13px;margin:4px 0;">${c.nick}: ${c.pet.name} ${PET_TYPES[c.pet.type].emoji}</div>`;
+      html += `<div style="color:#fff;font-size:13px;margin:4px 0;">${c.nick}: ${c.pet.name} ${getPetStage(c.pet.type, c.pet.level).emoji}</div>`;
     });
     const noPet = appData.children.filter(c => !c.pet || !c.pet.type);
     if(noPet.length > 0){
@@ -3599,7 +3798,7 @@ function showPKSetup(){
   petChildren.forEach(c => {
     const cp = calcCombatPower(c);
     html += `<div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border-radius:12px;padding:10px;margin:6px 0;">
-      <span style="font-size:32px;">${PET_TYPES[c.pet.type].face}</span>
+      <span style="font-size:32px;">${getPetStage(c.pet.type, c.pet.level).face}</span>
       <div style="flex:1;">
         <div style="font-size:14px;font-weight:700;color:#fff;">${c.pet.name} <span style="font-size:11px;opacity:.7;">(${c.nick})</span></div>
         <div style="font-size:11px;color:rgba(255,255,255,.6);">Lv.${c.pet.level} · CP ${cp.cp}</div>
@@ -3633,7 +3832,7 @@ function showPKFighterSelect(mode){
   petChildren.forEach(c => {
     const clickAttr = 'onclick="selectPKInitiator(\'' + c.id + '\')"';
     html += `<div class="pk-select-card" id="pkInit_${c.id}" ${clickAttr}>
-      <div style="font-size:32px;">${PET_TYPES[c.pet.type].face}</div>
+      <div style="font-size:32px;">${getPetStage(c.pet.type, c.pet.level).face}</div>
       <div style="font-size:12px;color:#fff;margin-top:4px;">${c.pet.name}</div>
       <div style="font-size:10px;color:rgba(255,255,255,.5);">${c.nick}</div>
     </div>`;
@@ -3680,7 +3879,7 @@ function selectPKInitiator(childId){
     others.forEach(c => {
       const clickAttr = 'onclick="selectPKOpponent(\'' + c.id + '\')"';
       html += `<div class="pk-select-card" id="pkOpp_${c.id}" ${clickAttr}>
-        <div style="font-size:32px;">${PET_TYPES[c.pet.type].face}</div>
+        <div style="font-size:32px;">${getPetStage(c.pet.type, c.pet.level).face}</div>
         <div style="font-size:12px;color:#fff;margin-top:4px;">${c.pet.name}</div>
         <div style="font-size:10px;color:rgba(255,255,255,.5);">${c.nick}</div>
       </div>`;
@@ -3690,7 +3889,7 @@ function selectPKInitiator(childId){
     pkSetupState.sideB = others.map(c => c.id);
     others.forEach(c => {
       html += `<div class="pk-select-card selected">
-        <div style="font-size:32px;">${PET_TYPES[c.pet.type].face}</div>
+        <div style="font-size:32px;">${getPetStage(c.pet.type, c.pet.level).face}</div>
         <div style="font-size:12px;color:#fff;margin-top:4px;">${c.pet.name}</div>
         <div style="font-size:10px;color:rgba(255,255,255,.5);">${c.nick}</div>
       </div>`;
@@ -3768,7 +3967,7 @@ function renderPKInvitationStatus(){
 
     html += `<div style="background:rgba(255,255,255,.1);border-radius:14px;padding:12px;margin:8px 0;">`;
     html += `<div style="display:flex;align-items:center;gap:10px;">`;
-    html += `<div style="font-size:32px;">${pt.face}</div>`;
+    html += `<div style="font-size:32px;">${getPetStage(c.pet.type, c.pet.level).face}</div>`;
     html += `<div style="flex:1;">`;
     html += `<div style="font-size:14px;color:#fff;font-weight:700;">${c.pet.name}</div>`;
     html += `<div style="font-size:10px;color:rgba(255,255,255,.5);">${c.nick}</div>`;
@@ -3832,7 +4031,8 @@ async function startPK(participantIds, mode){
       nick: child.nick,
       petName: child.pet.name,
       petType: child.pet.type,
-      petEmoji: pt.face,
+      petEmoji: getPetStage(child.pet.type, child.pet.level).face,
+      weaponEmoji: child.pet.weapon ? WEAPONS[child.pet.weapon].emoji : '',
       armorEmoji: child.pet.armor ? ARMORS[child.pet.armor].emoji : '',
       skill: skillId,
       hp: stats.maxHp, maxHp: stats.maxHp,
@@ -3964,7 +4164,7 @@ function renderPKFighterBlock(f){
   const hpPct = (f.hp / f.maxHp) * 100;
   const hpClass = hpPct < 30 ? 'low' : hpPct < 60 ? 'mid' : '';
   return `<div class="pk-fighter" id="fighter_${f.id}">
-    <div class="pk-fighter-emoji">${f.petEmoji}<span class="pk-fighter-armor">${f.armorEmoji}</span></div>
+    <div class="pk-fighter-emoji">${f.petEmoji}<span class="pk-fighter-armor">${f.weaponEmoji || ''}${f.armorEmoji}</span></div>
     <div class="pk-fighter-name">${f.petName}</div>
     <div class="pk-fighter-armor" style="font-size:10px;color:rgba(255,255,255,.6);">${f.nick}</div>
     <div class="pk-hp-bar-wrap">
